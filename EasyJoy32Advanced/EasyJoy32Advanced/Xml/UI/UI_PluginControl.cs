@@ -491,6 +491,9 @@ namespace EasyControl
                 #region 加载DLL
                 bool loadReady = false;
                 string pluginListStr = "";
+
+
+
                 if (NetMQServer.CheckPlugin(JoyConst.version1 + "_" + JoyConst.version2 + "_" + JoyConst.version3, out pluginListStr))
                     loadReady = true;
                 if (loadReady)
@@ -507,7 +510,7 @@ namespace EasyControl
                                 if (File.Exists(file))
                                 {
                                     string code = PublicData.GetSHA1String(file);
-                                    if (pluginInfo[1].ToUpper().Equals(code.ToUpper()) || pluginInfo[4].Equals("1"))//code相同 或 开发者
+                                    //if (pluginInfo[1].ToUpper().Equals(code.ToUpper()) || pluginInfo[4].Equals("1"))//code相同 或 开发者
                                     {
                                         LoadDll(file, pluginInfo[2], pluginInfo[3]);
                                     }

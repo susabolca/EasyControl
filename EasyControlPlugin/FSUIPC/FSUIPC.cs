@@ -9,22 +9,56 @@ namespace FSUIPC
     public enum FSUIPCPortType
     {
         None,
-        Out
+        Out,    // 兼容旧配置
+        RW,
+        R,
+        W
     };
+
+    public enum FSUIPCOffsetCan
+    {
+        None,
+        READ = 1 << 0,
+        WRITE = 1 << 1, 
+    };
+
+    public enum FSUIPCValueType
+    {
+        None,
+        S8,
+        U8,
+        S16,
+        U16,
+        S32,
+        U32,
+        S64,
+        U64,
+        F32,
+        F64,
+        BYTES,
+        STRING,
+    };
+
     public struct dataBuffer
     {
         public int nodeIndex;
-        public int portIndex;
-        public string valueType;
-        public string dataGroup;
-        public Offset valueOffset;
-    }
+        public int portIndexOut;        // out port index
+        public int portIndexIn;         // in port index
+        public FSUIPCOffsetCan offsetCan;       // Read / Write
+        public FSUIPCValueType valueType;       // S8, U8, S16 ...
+        //public string dataGroup;
+        public Offset valueOffset;      // hold FSUIPC offset
+    };
+
     public class FSUIPC : InterfacePlugin
     {
         int dwFSReq = 0;              // Any version of FS is OK
         int dwResult = -1;              // Variable to hold returned results
         int token = -1;
-        List<dataBuffer> bufferList = new List<dataBuffer>();
+        List<dataBuffer> OutList = new List<dataBuffer>();  // buff in read list 
+        //List<dataBuffer> InList = new List<dataBuffer>();   // buff in write list
+        Dictionary<string, dataBuffer> InList = new Dictionary<string, dataBuffer>();
+
         //================================================
         private List<Node> moduleList;
         public string PluginID
@@ -145,6 +179,7 @@ namespace FSUIPC
             return 0;
         }
         #endregion
+
         #region Xml
         private List<Node> XmlModule(string path)
         {
@@ -172,103 +207,150 @@ namespace FSUIPC
                                     if (port.Name.Equals("Port"))
                                     {
                                         string portName;
-                                        FSUIPCPortType portType;
+                                        string portType;
+                                        string valueType;
+                                        string addressStr;
                                         if (EasyXml.GetAttribute(port, "Name", out portName) &&
-                                            EasyXml.GetAttribute(port, "Type", out portType))
+                                            EasyXml.GetAttribute(port, "Type", out portType) &&
+                                            EasyXml.GetAttribute(port, "ValueType", out valueType) &&
+                                            EasyXml.GetAttribute(port, "Address", out addressStr))
                                         {
-                                            switch (portType)
+                                            FSUIPCOffsetCan offsetCan = FSUIPCOffsetCan.None;
+                                            portType = portType.ToLower();
+                                            switch (portType) 
                                             {
-                                                case FSUIPCPortType.Out:
-                                                    string valueType;
-                                                    string addressStr;
-                                                    if (EasyXml.GetAttribute(port, "ValueType", out valueType) &&
-                                                        EasyXml.GetAttribute(port, "Address", out addressStr))
-                                                    {
-                                                        byte[] addressArray = String2ByteArray(addressStr);
-                                                        if (addressArray.Length == 2)
-                                                        {
-                                                            int address = (addressArray[0] << 8) + (addressArray[1]);
-                                                            #region 处理数据 Out
-                                                            dataBuffer newBuffer = new dataBuffer();
-                                                            newBuffer.nodeIndex = moduleList.Count;
-                                                            newBuffer.portIndex = portList.Count;
-                                                            newBuffer.valueType = valueType;
-                                                            switch (valueType)
-                                                            {
-                                                                case "sbyte":
-                                                                    newBuffer.valueOffset = new Offset<sbyte>(address);
-                                                                    portList.Add(new NodePort(portName, PortType.Out, 0));
-                                                                    break;
-                                                                case "byte":
-                                                                    newBuffer.valueOffset = new Offset<byte>(address);
-                                                                    portList.Add(new NodePort(portName, PortType.Out, 0));
-                                                                    break;
-                                                                case "ushort":
-                                                                    newBuffer.valueOffset = new Offset<ushort>(address);
-                                                                    portList.Add(new NodePort(portName, PortType.Out, 0));
-                                                                    break;
-                                                                case "short":
-                                                                    newBuffer.valueOffset = new Offset<short>(address);
-                                                                    portList.Add(new NodePort(portName, PortType.Out, 0));
-                                                                    break;
-                                                                case "int":
-                                                                    newBuffer.valueOffset = new Offset<int>(address);
-                                                                    portList.Add(new NodePort(portName, PortType.Out, 0));
-                                                                    break;
-                                                                case "uint":
-                                                                    newBuffer.valueOffset = new Offset<uint>(address);
-                                                                    portList.Add(new NodePort(portName, PortType.Out, 0));
-                                                                    break;
-                                                                case "long":
-                                                                    newBuffer.valueOffset = new Offset<long>(address);
-                                                                    portList.Add(new NodePort(portName, PortType.Out, 0));
-                                                                    break;
-                                                                case "ulong":
-                                                                    newBuffer.valueOffset = new Offset<ulong>(address);
-                                                                    portList.Add(new NodePort(portName, PortType.Out, 0));
-                                                                    break;
-                                                                case "float":
-                                                                    newBuffer.valueOffset = new Offset<float>(address);
-                                                                    portList.Add(new NodePort(portName, PortType.Out, 0f));
-                                                                    break;
-                                                                case "double":
-                                                                    newBuffer.valueOffset = new Offset<double>(address);
-                                                                    portList.Add(new NodePort(portName, PortType.Out, 0f));
-                                                                    break;
-                                                                case "byte[]":
-                                                                    int dwSizeB;
-                                                                    if (EasyXml.GetAttribute(port, "dwSize", out dwSizeB))
-                                                                    {
-                                                                        newBuffer.valueOffset = new Offset<byte[]>(address, dwSizeB);
-                                                                        portList.Add(new NodePort(portName, PortType.Out, "...."));
-                                                                    }
-                                                                    break;
-                                                                case "string":
-                                                                    int dwSizeS;
-                                                                    //string dataG;
-                                                                    if (EasyXml.GetAttribute(port, "dwSize", out dwSizeS)/* &&
-                                                                        EasyXml.GetAttribute(port, "dataGroup", out dataG)*/)
-                                                                    {
-                                                                        //newBuffer.dataGroup = dataG;
-                                                                        newBuffer.valueOffset = new Offset<byte[]>(/*dataG,*/ address, dwSizeS);
-                                                                        portList.Add(new NodePort(portName, PortType.Out, "...."));
-                                                                    }
-                                                                    break;
-                                                                default:
-                                                                    Console.WriteLine("FSUIPC ValueType Error : " + nodeName);
-                                                                    break;
-                                                            }
-                                                            bufferList.Add(newBuffer);
-                                                        }
-                                                        else
-                                                        {
-                                                            Console.WriteLine("FSUIPC Address Error : " + nodeName);
-                                                        }
-                                                        #endregion
-                                                    }
+                                                case "out": case "r": 
+                                                    offsetCan = FSUIPCOffsetCan.READ; 
+                                                    break;
+                                                case "w": 
+                                                    offsetCan = FSUIPCOffsetCan.WRITE; 
+                                                    break;
+                                                case "rw": 
+                                                    offsetCan = FSUIPCOffsetCan.READ | FSUIPCOffsetCan.WRITE; 
+                                                    break;
+                                                default:
+                                                    Console.WriteLine("FSUIPC Type Error : " + nodeName);
                                                     break;
                                             }
+                                            
+                                            if (offsetCan != FSUIPCOffsetCan.None) {
+                                                valueType = valueType.ToLower();
+
+                                                byte[] addressArray = String2ByteArray(addressStr);
+                                                if (addressArray.Length == 2)
+                                                {
+                                                    int address = (addressArray[0] << 8) + (addressArray[1]);
+                                                    #region 处理数据 Out
+                                                    dataBuffer newBuffer = new dataBuffer();
+                                                    newBuffer.nodeIndex = moduleList.Count;
+                                                    newBuffer.offsetCan = offsetCan;
+
+                                                    dynamic defValue;
+                                                    switch (valueType)
+                                                    {
+                                                        case "sbyte":
+                                                        case "s8":
+                                                            newBuffer.valueOffset = new Offset<sbyte>(address);
+                                                            newBuffer.valueType = FSUIPCValueType.S8;
+                                                            defValue = 0;
+                                                            break;
+                                                        case "byte":
+                                                        case "u8":
+                                                            newBuffer.valueOffset = new Offset<byte>(address);
+                                                            newBuffer.valueType = FSUIPCValueType.U8;
+                                                            defValue = 0;
+                                                            break;
+                                                        case "ushort":
+                                                        case "u16":
+                                                            newBuffer.valueOffset = new Offset<ushort>(address);
+                                                            newBuffer.valueType = FSUIPCValueType.U16;
+                                                            defValue = 0;
+                                                            break;
+                                                        case "short":
+                                                        case "s16":
+                                                            newBuffer.valueOffset = new Offset<short>(address);
+                                                            newBuffer.valueType = FSUIPCValueType.S16;
+                                                            defValue = 0;
+                                                            break;
+                                                        case "int":
+                                                        case "s32":
+                                                            newBuffer.valueOffset = new Offset<int>(address);
+                                                            newBuffer.valueType = FSUIPCValueType.S32;
+                                                            defValue = 0;
+                                                            break;
+                                                        case "uint":
+                                                        case "u32":
+                                                            newBuffer.valueOffset = new Offset<uint>(address);
+                                                            newBuffer.valueType = FSUIPCValueType.U32;
+                                                            defValue = 0;
+                                                            break;
+                                                        case "long":
+                                                        case "s64":
+                                                            newBuffer.valueOffset = new Offset<long>(address);
+                                                            newBuffer.valueType = FSUIPCValueType.S64;
+                                                            defValue = 0;
+                                                            break;
+                                                        case "ulong":
+                                                        case "u64":
+                                                            newBuffer.valueOffset = new Offset<ulong>(address);
+                                                            newBuffer.valueType = FSUIPCValueType.U64;
+                                                            defValue = 0;
+                                                            break;
+                                                        case "float":
+                                                        case "f32":
+                                                            newBuffer.valueOffset = new Offset<float>(address);
+                                                            newBuffer.valueType = FSUIPCValueType.F32;
+                                                            defValue = 0f;
+                                                            break;
+                                                        case "double":
+                                                        case "f64":
+                                                            newBuffer.valueOffset = new Offset<double>(address);
+                                                            newBuffer.valueType = FSUIPCValueType.F64;
+                                                            defValue = 0f;
+                                                            break;
+                                                        case "byte[]":
+                                                        case "bytes":
+                                                            int dwSizeB;
+                                                            defValue = "...";
+                                                            if (EasyXml.GetAttribute(port, "dwSize", out dwSizeB)) {
+                                                                newBuffer.valueOffset = new Offset<byte[]>(address, dwSizeB);
+                                                                newBuffer.valueType = FSUIPCValueType.BYTES;
+                                                            }
+                                                            break;
+                                                        case "string":
+                                                            int dwSizeS;
+                                                            defValue = "...";
+                                                            //string dataG;
+                                                            if (EasyXml.GetAttribute(port, "dwSize", out dwSizeS)) {
+                                                                //newBuffer.dataGroup = dataG;
+                                                                newBuffer.valueOffset = new Offset<byte[]>(/*dataG,*/ address, dwSizeS);
+                                                                newBuffer.valueType = FSUIPCValueType.STRING;
+                                                            }
+                                                            break;
+                                                        default:
+                                                            Console.WriteLine("FSUIPC ValueType Error : " + nodeName);
+                                                            defValue = 0;
+                                                            break;
+                                                    }
+
+                                                    if ((newBuffer.offsetCan & FSUIPCOffsetCan.READ) == FSUIPCOffsetCan.READ) {
+                                                        newBuffer.portIndexOut = portList.Count;
+                                                        OutList.Add(newBuffer);
+                                                        portList.Add(new NodePort(portName, PortType.Out, defValue)); 
+                                                    }
+                                                    if ((newBuffer.offsetCan & FSUIPCOffsetCan.WRITE) == FSUIPCOffsetCan.WRITE) { 
+                                                        newBuffer.portIndexIn = portList.Count;
+                                                        InList.Add(moduleList.Count.ToString() + portList.Count.ToString(), newBuffer);
+                                                        portList.Add(new NodePort(portName, PortType.In, defValue));
+                                                    }
+                                                }
+                                                #endregion
+                                            }
                                         }
+                                        else
+                                        {
+                                            Console.WriteLine("FSUIPC XML Error: " + nodeName);
+                                        } // easyXML
                                     }
                                     #endregion
                                 }
@@ -297,57 +379,47 @@ namespace FSUIPC
         {
             if (Open)
             {
-                foreach (dataBuffer buffer in bufferList)
+                foreach (dataBuffer buffer in OutList)
                 {
                     if (buffer.nodeIndex >= 0 && buffer.nodeIndex < moduleList.Count)
                     {
-                        if (buffer.portIndex >= 0 && buffer.portIndex < moduleList[buffer.nodeIndex].NodePortList.Count)
+                        if (buffer.portIndexOut >= 0 && buffer.portIndexOut < moduleList[buffer.nodeIndex].NodePortList.Count)
                         {
-                            NodePort np = moduleList[buffer.nodeIndex].NodePortList[buffer.portIndex];
+                            NodePort np = moduleList[buffer.nodeIndex].NodePortList[buffer.portIndexOut];
+                            FSUIPCConnection.Process();
                             switch (buffer.valueType)
                             {
-                                case "sbyte":
-                                    FSUIPCConnection.Process();
+                                case FSUIPCValueType.S8: 
                                     np.ValueInt64 = buffer.valueOffset.GetValue<sbyte>();
                                     break;
-                                case "byte":
-                                    FSUIPCConnection.Process();
+                                case FSUIPCValueType.U8: 
                                     np.ValueInt64 = buffer.valueOffset.GetValue<byte>();
                                     break;
-                                case "ushort":
-                                    FSUIPCConnection.Process();
+                                case FSUIPCValueType.U16: 
                                     np.ValueInt64 = buffer.valueOffset.GetValue<ushort>();
                                     break;
-                                case "short":
-                                    FSUIPCConnection.Process();
+                                case FSUIPCValueType.S16: 
                                     np.ValueInt64 = buffer.valueOffset.GetValue<short>();
                                     break;
-                                case "int":
-                                    FSUIPCConnection.Process();
+                                case FSUIPCValueType.S32: 
                                     np.ValueInt64 = buffer.valueOffset.GetValue<int>();
                                     break;
-                                case "uint":
-                                    FSUIPCConnection.Process();
+                                case FSUIPCValueType.U32: 
                                     np.ValueInt64 = buffer.valueOffset.GetValue<uint>();
                                     break;
-                                case "long":
-                                    FSUIPCConnection.Process();
+                                case FSUIPCValueType.S64: 
                                     np.ValueInt64 = buffer.valueOffset.GetValue<long>();
                                     break;
-                                case "ulong":
-                                    FSUIPCConnection.Process();
+                                case FSUIPCValueType.U64: 
                                     np.ValueInt64 = (long)buffer.valueOffset.GetValue<ulong>();
                                     break;
-                                case "float":
-                                    FSUIPCConnection.Process();
+                                case FSUIPCValueType.F32: 
                                     np.ValueDouble = buffer.valueOffset.GetValue<float>();
                                     break;
-                                case "double":
-                                    FSUIPCConnection.Process();
+                                case FSUIPCValueType.F64: 
                                     np.ValueDouble = buffer.valueOffset.GetValue<double>();
                                     break;
-                                case "byte[]":
-                                    FSUIPCConnection.Process();
+                                case FSUIPCValueType.BYTES: 
                                     byte[] tempData = buffer.valueOffset.GetValue<byte[]>();
                                     string dataStr = "";
                                     for (int i = 0; i < tempData.Length; i++)
@@ -358,8 +430,7 @@ namespace FSUIPC
                                     }
                                     np.ValueString = dataStr;
                                     break;
-                                case "string":
-                                    FSUIPCConnection.Process(/*buffer.dataGroup*/);
+                                case FSUIPCValueType.STRING: 
                                     np.ValueString = buffer.valueOffset.GetValue<string>();
                                     break;
                             }
@@ -374,6 +445,52 @@ namespace FSUIPC
         }
         public void ValueChangeEvent(int mIndex, int pIndex)
         {
+            string key = mIndex.ToString() + pIndex.ToString();
+            if (!InList.ContainsKey(key))
+            {
+                return;
+            }
+
+            dataBuffer inBuf = InList[key];
+            NodePort inVal = moduleList[mIndex].NodePortList[pIndex];
+
+            switch (inBuf.valueType)
+            {
+                case FSUIPCValueType.S8:
+                    inBuf.valueOffset.SetValue((sbyte)inVal.ValueInt64);
+                    break;
+                case FSUIPCValueType.U8:
+                    inBuf.valueOffset.SetValue((byte)inVal.ValueInt64);
+                    break;
+                case FSUIPCValueType.S16:
+                    inBuf.valueOffset.SetValue((short)inVal.ValueInt64);
+                    break;
+                case FSUIPCValueType.U16:
+                    inBuf.valueOffset.SetValue((ushort)inVal.ValueInt64);
+                    break;
+                case FSUIPCValueType.S32:
+                    inBuf.valueOffset.SetValue((int)inVal.ValueInt64);
+                    break;
+                case FSUIPCValueType.U32:
+                    inBuf.valueOffset.SetValue((uint)inVal.ValueInt64);
+                    break;
+                case FSUIPCValueType.S64:
+                    inBuf.valueOffset.SetValue((long)inVal.ValueInt64);
+                    break;
+                case FSUIPCValueType.U64:
+                    inBuf.valueOffset.SetValue((ulong)inVal.ValueInt64);
+                    break;
+                case FSUIPCValueType.F32:
+                    inBuf.valueOffset.SetValue((float)inVal.ValueDouble);
+                    break;
+                case FSUIPCValueType.F64:
+                    inBuf.valueOffset.SetValue((double)inVal.ValueDouble);
+                    break;
+                default:
+                    Console.WriteLine("FSUIPC In Type Error: " + inBuf.valueType);
+                    break;
+            }
+            FSUIPCConnection.Process();
         }
         public void OnReceiveUdpMsg(EndPoint client, byte[] msg)
         {
