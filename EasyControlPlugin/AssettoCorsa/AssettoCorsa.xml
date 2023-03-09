@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<UI>
+  <LayoutControl ID="Main" _OrientationType="Vertical" LayoutMaxHeight="56">
+    <Button ID="acSet" _Text ="连接 Assetto Corsa" Type="NoLocalization" />
+    <LayoutControl _OrientationType="Horizontal" >
+      <TextLable _Text="IP" Color="1,1,1,1" MaxHeight="32" Frame="true" Localization="false"
+              TextAlignment="Center"  FontWeight="Normal" FontStyle="Normal"></TextLable>
+      <TextEditor ID = "acIP" _Text="127.0.0.1" LayoutPlaceholder="2" ></TextEditor>
+    </LayoutControl>
+  </LayoutControl>
+</UI>

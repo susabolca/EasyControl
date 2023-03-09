@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Plugin>
+  <Module>
+    <Node Name="Test UDP">
+      <Port Name="In Int" Type ="In" ValueType="Int"/>
+      <Port Name="In Float" Type ="In" ValueType="Float"/>
+      <Port Name="In String" Type ="In" ValueType="String" Length="12"/>
+      <Port Name="Out Int" Type ="Out" ValueType="Int"/>
+      <Port Name="Out Float" Type ="Out" ValueType="Float"/>
+      <Port Name="Out String" Type ="Out" ValueType="String" Length="12"/>
+    </Node>
+  </Module>
+</Plugin>

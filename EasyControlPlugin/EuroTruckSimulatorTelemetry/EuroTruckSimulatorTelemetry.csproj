@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{80FBF621-B3D8-457A-B6F9-519152F7AD37}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SCSSdkClient</RootNamespace>
+    <AssemblyName>EuroTruckSimulatorTelemetry</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\..\EasyControlReleasePlugin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AuxLevel.cs" />
+    <Compile Include="Extension.cs" />
+    <Compile Include="JobMarket.cs" />
+    <Compile Include="Log.cs" />
+    <Compile Include="Object\SCSTelemetry.Common.cs" />
+    <Compile Include="Object\SCSTelemetry.Control.cs" />
+    <Compile Include="Object\SCSTelemetry.cs" />
+    <Compile Include="Object\SCSTelemetry.DPlacement.cs" />
+    <Compile Include="Object\SCSTelemetry.DVector.cs" />
+    <Compile Include="Object\SCSTelemetry.Euler.cs" />
+    <Compile Include="Object\SCSTelemetry.FPlacement.cs" />
+    <Compile Include="Object\SCSTelemetry.Frequency.cs" />
+    <Compile Include="Object\SCSTelemetry.FVector.cs" />
+    <Compile Include="Object\SCSTelemetry.GamePlayEvents.cs" />
+    <Compile Include="Object\SCSTelemetry.Job.cs" />
+    <Compile Include="Object\SCSTelemetry.Methods.cs" />
+    <Compile Include="Object\SCSTelemetry.Movement.cs" />
+    <Compile Include="Object\SCSTelemetry.Navigation.cs" />
+    <Compile Include="Object\SCSTelemetry.SpecialEvents.cs" />
+    <Compile Include="Object\SCSTelemetry.Substance.cs" />
+    <Compile Include="Object\SCSTelemetry.Time.cs" />
+    <Compile Include="Object\SCSTelemetry.Trailer.cs" />
+    <Compile Include="Object\SCSTelemetry.Truck.Constants.cs" />
+    <Compile Include="Object\SCSTelemetry.Truck.cs" />
+    <Compile Include="Object\SCSTelemetry.Truck.Current.cs" />
+    <Compile Include="Object\SCSTelemetry.Truck.Position.cs" />
+    <Compile Include="Object\SCSTelemetry.Version.cs" />
+    <Compile Include="Object\SCSTelemetry.Wheels.cs" />
+    <Compile Include="Offence.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SCSGame.cs" />
+    <Compile Include="SCSSdkConvert.cs" />
+    <Compile Include="SCSSdkTelemetry.cs" />
+    <Compile Include="SharedMemory.cs" />
+    <Compile Include="ShifterType.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

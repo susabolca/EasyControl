@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<UI>
+  <LayoutControl ID="Main" _OrientationType="Vertical" LayoutMaxHeight="112">
+    <Button ID="openUDP" _Text ="连接 UDP" Type="NoLocalization" />
+    <LayoutControl _OrientationType="Horizontal" >
+      <TextLable _Text="IP" Color="1,1,1,1" MaxHeight="32" Frame="true" Localization="false"
+              TextAlignment="Center"  FontWeight="Normal" FontStyle="Normal"></TextLable>
+      <TextEditor ID = "udpIP" _Text="127.0.0.1" LayoutPlaceholder="2" ></TextEditor>
+    </LayoutControl>
+    <LayoutControl _OrientationType="Horizontal" >
+      <TextLable _Text="接收端口" Color="1,1,1,1" MaxHeight="32" Frame="true" Localization="false"
+              TextAlignment="Center"  FontWeight="Normal" FontStyle="Normal"></TextLable>
+      <TextEditor ID = "udpInPort" _Text="7089" LayoutPlaceholder="2" ></TextEditor>
+    </LayoutControl>
+    <LayoutControl _OrientationType="Horizontal" >
+      <TextLable _Text="发送端口" Color="1,1,1,1" MaxHeight="32" Frame="true" Localization="false"
+              TextAlignment="Center"  FontWeight="Normal" FontStyle="Normal"></TextLable>
+      <TextEditor ID = "udpOutPort" _Text="7099" LayoutPlaceholder="2" ></TextEditor>
+    </LayoutControl>
+  </LayoutControl>
+</UI>

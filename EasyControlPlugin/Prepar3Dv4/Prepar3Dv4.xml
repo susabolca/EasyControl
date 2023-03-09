@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<UI>
+  <LayoutControl ID="Main" _OrientationType="Vertical" LayoutMaxHeight="56">
+    <Button ID="P3dOpen" _Text ="连接 Prepar3D" Type="NoLocalization" />
+    <Button ID="P3dClose" _Text ="断开 Prepar3D" Type="NoLocalization" />
+  </LayoutControl>
+</UI>

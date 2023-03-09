@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<UI>
+  <LayoutControl ID="Main" _OrientationType="Vertical" LayoutMaxHeight="112">
+    <Button ID="XPSet" _Text ="连接X-Plane 11" Type="NoLocalization" />
+    <LayoutControl _OrientationType="Horizontal" >
+      <TextLable _Text="IP" Color="1,1,1,1" MaxHeight="32" Frame="true" Localization="false"
+              TextAlignment="Center"  FontWeight="Normal" FontStyle="Normal"></TextLable>
+      <TextEditor ID = "xpIP" _Text="192.168.0.1" LayoutPlaceholder="2" ></TextEditor>
+    </LayoutControl>
+    <LayoutControl _OrientationType="Horizontal" >
+      <TextLable _Text="输入端口" Color="1,1,1,1" MaxHeight="32" Frame="true" Localization="false"
+              TextAlignment="Center"  FontWeight="Normal" FontStyle="Normal"></TextLable>
+      <TextEditor ID = "xpInPort" _Text="9089" LayoutPlaceholder="2" ></TextEditor>
+    </LayoutControl>
+    <LayoutControl _OrientationType="Horizontal" >
+      <TextLable _Text="输出端口" Color="1,1,1,1" MaxHeight="32" Frame="true" Localization="false"
+              TextAlignment="Center"  FontWeight="Normal" FontStyle="Normal"></TextLable>
+      <TextEditor ID = "xpOutPort" _Text="49000" LayoutPlaceholder="2" ></TextEditor>
+    </LayoutControl>
+  </LayoutControl>
+</UI>

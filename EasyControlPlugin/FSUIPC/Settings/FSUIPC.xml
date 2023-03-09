@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Plugin>
+  <Settings>
+  </Settings>
+  <Module>
+    <Node Name="Test FSUIPC">
+      <Port Name="Turn coordinator ball" Type ="Out" ValueType="sbyte" Address="036E"/>
+      <Port Name="Clock Hour" Type ="Out" ValueType="byte" Address="0238"/>
+      <Port Name="Clock Min" Type ="Out" ValueType="byte" Address="0239"/>
+      <Port Name="Clock Sec" Type ="Out" ValueType="byte" Address="023A"/>
+      <Port Name="G-Force" Type ="Out" ValueType="short" Address="11BA"/>
+      <Port Name="Day of Year" Type ="Out" ValueType="ushort" Address="023E"/>
+      <Port Name="True Air Speed" Type ="Out" ValueType="int" Address="02B8"/>
+      <Port Name="Heading" Type ="Out" ValueType="uint" Address="0580"/>
+      <Port Name="Altitude of aircraft" Type ="Out" ValueType="long" Address="0570"/>
+      <Port Name="Time String" Type ="Out" ValueType="string" dwSize="9" Address="0C20"/>
+    </Node>
+  </Module>
+</Plugin>
